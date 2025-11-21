@@ -1,4 +1,4 @@
-# Bundesliga CSP – AI Modeling Assignment
+# Bundesliga CSP – AI Modeling
 
 Work in progress . . .  
 Scheduling the Bundesliga season as a Constraint Satisfaction Problem.
