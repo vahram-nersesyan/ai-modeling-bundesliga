@@ -3,9 +3,11 @@
 Work in progress . . .  
 Scheduling the Bundesliga season as a Constraint Satisfaction Problem.
 
-This repository will contain:
+Currently implemented:
+- Variables and Domains Logic
+
+Planned:
 - Constraint model
-- Variables
 - Solver
 - Logging solution to `scheduling.log`
 
