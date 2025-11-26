@@ -1,9 +1,12 @@
 # TODO
 
+## Completed
+- [x] Move logic from Jupyter notebook to `src/main.py`
+- [x] Basic CSP with 4 teams working
+
 ## Next Steps (Priority Order)
 - [ ] Scale from 4 to 18 teams
 - [ ] Implement real Bundesliga team names
-- [ ] Move logic from Jupyter notebook to `src/main.py`
 - [ ] Add match visualization with matplotlib
 - [ ] Write proper README with usage instructions
 
