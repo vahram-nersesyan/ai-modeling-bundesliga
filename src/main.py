@@ -1,15 +1,16 @@
 from constraint import Problem, AllDifferentConstraint
 
 # INPUT
-teams = ["A", "B", "C", "D"]
-location_available = {
-    "A": [1, 4, 6, 7, 8, 10],
-    "B": [2, 4, 5, 6, 7, 9],
-    "C": [2, 3, 5, 8, 10],
-    "D": [1, 3, 6, 8, 9, 10],
-}
-season_split = 5  # Will be 17 for real Bundesliga
+# INPUT - Proof of Concept (6 teams)
+# Note: python-constraint doesn't scale well to 18 teams
+teams = [
+    "Bayern München", "Borussia Dortmund", "RB Leipzig",
+    "Bayer Leverkusen", "VfB Stuttgart", "Eintracht Frankfurt"
+]
 
+matchdays = list(range(1, 11))  # 10 Spieltage für 6 Teams
+location_available = {team: matchdays for team in teams}
+season_split = 5  # Hinrunde: 1-5, Rückrunde: 6-10
 
 def generate_variables(problem, teams, location_available):
     """Generate CSP variables for all possible matches."""
@@ -41,32 +42,8 @@ def add_constraints(problem, teams, season_split):
                 matches.append((g, h))
         problem.addConstraint(AllDifferentConstraint(), matches)
     
-    # Constraint 6: Mirror Logic (relative ordering)
-    def mirror_logic(home1, away1, home2, away2):
-        leg1_pair1 = min(home1, away1)
-        leg2_pair1 = max(home1, away1)
-        leg1_pair2 = min(home2, away2)
-        leg2_pair2 = max(home2, away2)
-        
-        if leg1_pair1 <= leg1_pair2 and leg2_pair1 <= leg2_pair2:
-            return True
-        if leg1_pair1 >= leg1_pair2 and leg2_pair1 >= leg2_pair2:
-            return True
-        return False
-    
-    pairings = []
-    for h in teams:
-        for g in teams:
-            if h < g:
-                pairings.append((h, g))
-    
-    for i in range(len(pairings)):
-        for j in range(i + 1, len(pairings)):
-            pair1 = pairings[i]
-            pair2 = pairings[j]
-            pair1_away = (pair1[1], pair1[0])
-            pair2_away = (pair2[1], pair2[0])
-            problem.addConstraint(mirror_logic, [pair1, pair1_away, pair2, pair2_away])
+    # Constraint 6: Mirror Logic (relative ordering) TEMPORARILY DISABLED (too slow with 18 teams)
+    # TODO: Optimize or replace with different approach
 
 
 def solve_schedule(problem, filename="scheduling.log"):
