@@ -3,4 +3,4 @@ __pycache__/
 *.log
 .venv/
 venv/
-*.pyc
+*.pyc.DS_Store
