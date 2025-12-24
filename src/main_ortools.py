@@ -50,3 +50,62 @@ def create_model():
                 match_vars[(home, away)] = model.NewIntVar(
                     1, NUM_MATCHDAYS, var_name
                 )
+
+    # ========================================================================
+    # CONSTRAINT 1: Season Split (Hinrunde/Rückrunde)
+    # ========================================================================
+    # Each pairing {A, B} must play once in first half (days 1-17)
+    # and once in second half (days 18-34)
+    
+    for i, team_a in enumerate(TEAMS):
+        for j, team_b in enumerate(TEAMS):
+            if i < j:  # Only check each pairing once
+                match_ab = match_vars[(team_a, team_b)]  # A vs B at A's home
+                match_ba = match_vars[(team_b, team_a)]  # B vs A at B's home
+                
+                # One match in first half, one in second half
+                # Create boolean variables to track which half each match is in
+                ab_first_half = model.NewBoolVar(f"{team_a}_{team_b}_first")
+                ba_first_half = model.NewBoolVar(f"{team_b}_{team_a}_first")
+                
+                # ab_first_half is True iff match_ab <= SEASON_SPLIT
+                model.Add(match_ab <= SEASON_SPLIT).OnlyEnforceIf(ab_first_half)
+                model.Add(match_ab > SEASON_SPLIT).OnlyEnforceIf(ab_first_half.Not())
+                
+                # ba_first_half is True iff match_ba <= SEASON_SPLIT
+                model.Add(match_ba <= SEASON_SPLIT).OnlyEnforceIf(ba_first_half)
+                model.Add(match_ba > SEASON_SPLIT).OnlyEnforceIf(ba_first_half.Not())
+                
+                # Exactly one of them must be in first half (XOR)
+                model.Add(ab_first_half + ba_first_half == 1)
+
+    # ========================================================================
+    # CONSTRAINT 2: One Match Per Team Per Day
+    # ========================================================================
+    # A team can only play one match on any given day
+    
+    for team in TEAMS:
+        for day in range(1, NUM_MATCHDAYS + 1):
+            # Collect all matches involving this team on this day
+            matches_on_day = []
+            
+            for opponent in TEAMS:
+                if opponent != team:
+                    # Home match: team vs opponent
+                    home_match = match_vars[(team, opponent)]
+                    is_home_match = model.NewBoolVar(f"{team}_home_{opponent}_day{day}")
+                    model.Add(home_match == day).OnlyEnforceIf(is_home_match)
+                    model.Add(home_match != day).OnlyEnforceIf(is_home_match.Not())
+                    matches_on_day.append(is_home_match)
+                    
+                    # Away match: opponent vs team
+                    away_match = match_vars[(opponent, team)]
+                    is_away_match = model.NewBoolVar(f"{team}_away_{opponent}_day{day}")
+                    model.Add(away_match == day).OnlyEnforceIf(is_away_match)
+                    model.Add(away_match != day).OnlyEnforceIf(is_away_match.Not())
+                    matches_on_day.append(is_away_match)
+            
+            # At most 1 match per team per day
+            model.Add(sum(matches_on_day) <= 1)
+    
+    return model, match_vars
