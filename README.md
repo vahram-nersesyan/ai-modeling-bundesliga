@@ -1,18 +1,21 @@
-# Bundesliga CSP – AI Modeling
+# Bundesliga Schedule Generator
 
-Work in progress . . .  
-Scheduling the Bundesliga season as a Constraint Satisfaction Problem.
+Generating valid Bundesliga season schedules using Constraint Satisfaction Programming.
 
-**Currently implemented:**
-- Variables and Domains Logic: Mapping teams and stadium availability to CSP variables.
-- Constraint 1: Season Split: Ensuring every pair plays exactly once in the first half and once in the second half.
-- Constraint 2: One Match per Team: Using `AllDifferent` to prevent teams from playing multiple matches simultaneously.
-- Constraint 3: Location Validity: Implicitly covered (as every location is tied to a specific home team).
-- Constraint 4: Venue Validity: Implicitly covered by variable generation (variables created for both (A,B) at A and (B,A) at B).
-- Constraint 5: Sequential Halves: Implicitly covered by strict season split logic (all first-half matches <= split < all second-half matches).
-- Constraint 6: Mirror Logic: Enforcing the relative order of matches in the second season half.
+## The Problem
+Schedule 306 matches (18 teams × 17 opponents × 2 legs) across 34 matchdays while satisfying:
+- Each team plays exactly once per matchday
+- Each pairing plays once in first half (Hinrunde), once in second half (Rückrunde)
+- Home/away venue constraints
 
-Planned (Next Steps):
-- Solver & Logging: Exporting valid schedules to `scheduling.log`.
+## Technical Journey
+Started with `python-constraint` – worked for 4-6 teams but didn't scale. Systematic benchmarking showed exponential blowup, leading to migration to **Google OR-Tools CP-SAT solver**.
 
-More documentation will follow.
+| Teams | python-constraint | OR-Tools |
+|-------|-------------------|----------|
+| 4     | <1s               | <1s      |
+| 6     | ~2s               | <1s      |
+| 18    | ∞ (timeout)       | TBD      |
+
+## Status
+OR-Tools migration in progress – core constraints implemented, logging next.
