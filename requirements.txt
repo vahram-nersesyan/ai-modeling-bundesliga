@@ -1,2 +1,2 @@
-python-constraint
 jupyter
+ortools
