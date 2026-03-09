@@ -15,7 +15,7 @@ Started with `python-constraint` – worked for 4-6 teams but didn't scale. Syst
 |-------|-------------------|----------|
 | 4     | <1s               | <1s      |
 | 6     | ~2s               | <1s      |
-| 18    | ∞ (timeout)       | TBD      |
+| 18    | ∞ (timeout)       | <2s      |
 
 ## Status
-OR-Tools migration in progress – core constraints implemented, logging next.
+Core scheduling works for all 18 teams using OR-Tools CP-SAT (~2s).
