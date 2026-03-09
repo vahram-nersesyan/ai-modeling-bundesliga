@@ -109,3 +109,29 @@ def create_model():
             model.Add(sum(matches_on_day) <= 1)
     
     return model, match_vars
+
+# ========================================================================
+# Solution
+# ========================================================================
+
+def solve(model):
+    solver = cp_model.CpSolver()
+    status = solver.solve(model)
+    if status == cp_model.FEASIBLE or status == cp_model.OPTIMAL:
+        return solver
+    else:
+        print("No solution was found!")
+    
+def print_solution(solver, match_vars):
+    # Print the schedule sorted by matchday
+    matches = list(match_vars.keys())
+    matches.sort(key=lambda pair: solver.value(match_vars[pair]))
+    for home, away in matches:
+        day = solver.value(match_vars[(home, away)])
+        print(f"Day {day}: {home} vs {away}")
+
+if __name__ == "__main__":
+    model, match_vars = create_model()
+    solver = solve(model)
+    if solver:
+        print_solution(solver, match_vars)
