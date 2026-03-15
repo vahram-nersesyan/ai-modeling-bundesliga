@@ -19,3 +19,7 @@ Started with `python-constraint` – worked for 4-6 teams but didn't scale. Syst
 
 ## Status
 Core scheduling works for all 18 teams using OR-Tools CP-SAT (~2s).
+
+## Correctness
+
+**Solver level:** The CP-SAT solver relies on CDCL. We provide a self-contained proof that learned clauses are sound. See [docs/theory/soundness_of_cdcl.pdf](docs/theory/soundness_of_cdcl.pdf).
