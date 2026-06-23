@@ -4,24 +4,7 @@ Migrated from python-constraint for better performance and scalability
 """
 
 from ortools.sat.python import cp_model
-
-# ============================================================================
-# CONFIGURATION
-# ============================================================================
-
-# 18 Bundesliga teams (2025/26 season)
-TEAMS = [
-    "Bayern München", "Bayer Leverkusen", "Eintracht Frankfurt", "Borussia Dortmund",
-    "SC Freiburg", "Mainz 05", "RB Leipzig", "Werder Bremen",
-    "VfB Stuttgart", "Borussia Mönchengladbach", "VfL Wolfsburg", "FC Augsburg",
-    "Union Berlin", "FC St. Pauli", "TSG Hoffenheim", "1. FC Heidenheim",
-    "1. FC Köln", "Hamburger SV"
-]
-
-
-NUM_TEAMS = len(TEAMS)
-NUM_MATCHDAYS = (NUM_TEAMS - 1) * 2  # 34 matchdays for 18 teams
-SEASON_SPLIT = NUM_MATCHDAYS // 2    # Day 17 splits first and second half of season
+from src.config import TEAMS, NUM_TEAMS, NUM_MATCHDAYS, SEASON_SPLIT
 
 
 # ============================================================================
