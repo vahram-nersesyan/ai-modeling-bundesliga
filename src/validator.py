@@ -71,3 +71,35 @@ def validate_season_split(schedule: list[Match], season_split: int) -> Validatio
     return ValidationResult(
         "season_split", True, "Every pairing plays once per half"
     )
+
+
+def validate_home_away_pairing(schedule: list[Match]) -> ValidationResult:
+    # Each unordered pairing must have exactly one match at each team's home.
+    legs = {}  # frozenset({A, B}) -> list of home teams
+    for m in schedule:
+        pairing = frozenset({m.home, m.away})
+        legs.setdefault(pairing, []).append(m.home)
+    bad = {
+        tuple(sorted(pairing)): sorted(homes)
+        for pairing, homes in legs.items()
+        if sorted(homes) != sorted(pairing)
+    }
+    if bad:
+        return ValidationResult(
+            "home_away_pairing", False,
+            f"Pairings without exactly one home each {{pairing: home teams}}: {bad}",
+        )
+    return ValidationResult(
+        "home_away_pairing", True, "Every pairing has one home and one away leg"
+    )
+
+
+def validate(schedule: list[Match], num_teams: int, season_split: int) -> list[ValidationResult]:
+    # Run every validation check and collect the results.
+    return [
+        validate_match_count(schedule, num_teams),
+        validate_matches_per_matchday(schedule, num_teams),
+        validate_one_match_per_team_per_day(schedule),
+        validate_season_split(schedule, season_split),
+        validate_home_away_pairing(schedule),
+    ]

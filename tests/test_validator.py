@@ -6,6 +6,8 @@ from src.validator import (
     validate_matches_per_matchday,
     validate_one_match_per_team_per_day,
     validate_season_split,
+    validate_home_away_pairing,
+    validate,
 )
 
 
@@ -167,3 +169,54 @@ class TestValidateSeasonSplit(unittest.TestCase):
     def test_result_has_name(self):
         result = validate_season_split(VALID_4_TEAM_SCHEDULE, season_split=3)
         self.assertEqual(result.name, "season_split")
+
+
+class TestValidateHomeAwayPairing(unittest.TestCase):
+
+    def test_valid_schedule_passes(self):
+        result = validate_home_away_pairing(VALID_4_TEAM_SCHEDULE)
+        self.assertTrue(result.passed)
+
+    def test_both_legs_same_home_fails(self):
+        schedule = [
+            Match("A", "B", 1),
+            Match("A", "B", 4),  # A is home both times
+        ]
+        result = validate_home_away_pairing(schedule)
+        self.assertFalse(result.passed)
+
+    def test_one_home_each_passes(self):
+        schedule = [
+            Match("A", "B", 1),
+            Match("B", "A", 4),
+        ]
+        result = validate_home_away_pairing(schedule)
+        self.assertTrue(result.passed)
+
+    def test_result_has_name(self):
+        result = validate_home_away_pairing(VALID_4_TEAM_SCHEDULE)
+        self.assertEqual(result.name, "home_away_pairing")
+
+
+class TestValidate(unittest.TestCase):
+
+    def test_valid_schedule_all_pass(self):
+        results = validate(VALID_4_TEAM_SCHEDULE, num_teams=4, season_split=3)
+        self.assertTrue(all(r.passed for r in results))
+
+    def test_returns_one_result_per_check(self):
+        results = validate(VALID_4_TEAM_SCHEDULE, num_teams=4, season_split=3)
+        self.assertEqual(len(results), 5)
+
+    def test_broken_schedule_reports_failures(self):
+        # A plays twice on day 1; also breaks home/away and season split.
+        broken = [Match("A", "B", 1), Match("A", "B", 1)]
+        results = validate(broken, num_teams=4, season_split=3)
+        failed = [r.name for r in results if not r.passed]
+        self.assertIn("one_match_per_team_per_day", failed)
+        self.assertIn("home_away_pairing", failed)
+
+    def test_each_result_names_unique(self):
+        results = validate(VALID_4_TEAM_SCHEDULE, num_teams=4, season_split=3)
+        names = [r.name for r in results]
+        self.assertEqual(len(names), len(set(names)))
