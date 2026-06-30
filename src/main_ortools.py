@@ -5,6 +5,8 @@ Migrated from python-constraint for better performance and scalability
 
 from ortools.sat.python import cp_model
 from src.config import TEAMS, NUM_TEAMS, NUM_MATCHDAYS, SEASON_SPLIT
+from src.model import Match
+from src.validator import validate
 
 
 # ============================================================================
@@ -105,16 +107,32 @@ def solve(model):
     else:
         print("No solution was found!")
     
-def print_solution(solver, match_vars):
-    # Print the schedule sorted by matchday
-    matches = list(match_vars.keys())
-    matches.sort(key=lambda pair: solver.value(match_vars[pair]))
-    for home, away in matches:
-        day = solver.value(match_vars[(home, away)])
-        print(f"Day {day}: {home} vs {away}")
+def build_schedule(solver, match_vars) -> list[Match]:
+    # Convert the solver's assignment into a list of Match objects.
+    schedule = []
+    for (home, away), var in match_vars.items():
+        schedule.append(Match(home=home, away=away, day=solver.value(var)))
+    return schedule
+
+
+def print_schedule(schedule: list[Match]) -> None:
+    # Print the schedule sorted by matchday.
+    for m in sorted(schedule, key=lambda m: m.day):
+        print(f"Day {m.day}: {m.home} vs {m.away}")
+
+
+def print_validation(schedule: list[Match]) -> None:
+    # Run all validators on the schedule and print each result.
+    results = validate(schedule, num_teams=NUM_TEAMS, season_split=SEASON_SPLIT)
+    print("\n--- Validation ---")
+    for r in results:
+        status = "PASS" if r.passed else "FAIL"
+        print(f"[{status}] {r.name}: {r.message}")
 
 if __name__ == "__main__":
     model, match_vars = create_model()
     solver = solve(model)
     if solver:
-        print_solution(solver, match_vars)
+        schedule = build_schedule(solver, match_vars)
+        print_schedule(schedule)
+        print_validation(schedule)
